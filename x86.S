@@ -5,7 +5,16 @@
 
 #ifdef __i386__
 
-#ifdef __OpenBSD__
+#if defined(__OpenBSD__) && !defined(__ELF__)
+#define UNDERSCORES
+#define ALIGN_LOG
+#endif
+
+#if defined(__CYGWIN32__) || defined(__MINGW32__)
+#define UNDERSCORES
+#endif
+
+#ifdef __DJGPP__
 #define UNDERSCORES
 #define ALIGN_LOG
 #endif
