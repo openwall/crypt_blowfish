@@ -1,0 +1,21 @@
+These numbers are for 32 iterations ("$2a$05"):
+
+			OpenBSD 2.8 bcrypt(*)	crypt_blowfish-0.4
+Pentium III, 840 MHz	99 c/s			121 c/s (+22%)
+Alpha 21164PC, 533 MHz	55.5 c/s		76.9 c/s (+38%)
+Pentium, 120 MHz	8.8 c/s			20.1 c/s (+128%)
+
+(*) built with -fomit-frame-pointer -funroll-loops, which I don't
+think happens for libcrypt.
+
+The large speedup for the original Pentium is due to the assembly
+code and the weird optimizations this processor requires.
+
+The numbers for password cracking are 2 to 10% higher than those for
+crypt_blowfish as certain things may be done out of the loop and the
+code doesn't need to be reentrant.
+
+Recent versions of John the Ripper (v1.6.25-dev and newer) achieve an
+additional 15% speedup on the Pentium Pro family of processors (which
+includes Pentium III) with a separate version of the assembly code and
+run-time CPU detection.

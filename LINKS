@@ -1,0 +1,15 @@
+New versions of this package (crypt_blowfish):
+
+	http://www.openwall.com/crypt/
+
+A paper on the algorithm that explains its design decisions:
+
+	http://www.usenix.org/events/usenix99/provos.html
+
+Unix Seventh Edition Manual, Volume 2: the password scheme (1978):
+
+	http://plan9.bell-labs.com/7thEdMan/vol2/password
+
+John the Ripper password cracker:
+
+	http://www.openwall.com/john/

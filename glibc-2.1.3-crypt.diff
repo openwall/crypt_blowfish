@@ -1,0 +1,60 @@
+diff -urPX nopatch glibc-2.1.3.orig/crypt/sysdeps/unix/Makefile glibc-2.1.3/crypt/sysdeps/unix/Makefile
+--- glibc-2.1.3.orig/crypt/sysdeps/unix/Makefile	Wed Mar  5 00:33:59 1997
++++ glibc-2.1.3/crypt/sysdeps/unix/Makefile	Sun Jun 11 03:13:41 2000
+@@ -1,4 +1,4 @@
+ ifeq ($(subdir),md5-crypt)
+-libcrypt-routines += crypt crypt_util
+-dont_distribute += crypt.c crypt_util.c
++libcrypt-routines += crypt crypt_util crypt_blowfish x86 crypt_gensalt wrapper
++dont_distribute += crypt.c crypt_util.c crypt_blowfish.c x86.S crypt_gensalt.c wrapper.c
+ endif
+diff -urPX nopatch glibc-2.1.3.orig/crypt/sysdeps/unix/crypt-entry.c glibc-2.1.3/crypt/sysdeps/unix/crypt-entry.c
+--- glibc-2.1.3.orig/crypt/sysdeps/unix/crypt-entry.c	Thu Dec 10 12:49:04 1998
++++ glibc-2.1.3/crypt/sysdeps/unix/crypt-entry.c	Sun Jun 11 03:14:57 2000
+@@ -70,7 +70,7 @@
+  */
+ 
+ char *
+-__crypt_r (key, salt, data)
++__des_crypt_r (key, salt, data)
+      const char *key;
+      const char *salt;
+      struct crypt_data * __restrict data;
+@@ -115,6 +115,7 @@
+   _ufc_output_conversion_r (res[0], res[1], salt, data);
+   return data->crypt_3_buf;
+ }
++#if 0
+ weak_alias (__crypt_r, crypt_r)
+ 
+ char *
+@@ -130,6 +131,7 @@
+ 
+   return __crypt_r (key, salt, &_ufc_foobar);
+ }
++#endif
+ 
+ 
+ /*
+diff -urPX nopatch glibc-2.1.3.orig/md5-crypt/Makefile glibc-2.1.3/md5-crypt/Makefile
+--- glibc-2.1.3.orig/md5-crypt/Makefile	Thu Jul  2 22:46:47 1998
++++ glibc-2.1.3/md5-crypt/Makefile	Sun Jun 11 03:12:34 2000
+@@ -21,7 +21,7 @@
+ #
+ subdir	:= md5-crypt
+ 
+-headers := crypt.h
++headers := crypt.h gnu-crypt.h ow-crypt.h
+ 
+ distribute := md5.h
+ 
+diff -urPX nopatch glibc-2.1.3.orig/md5-crypt/Versions glibc-2.1.3/md5-crypt/Versions
+--- glibc-2.1.3.orig/md5-crypt/Versions	Thu Jul  2 22:32:07 1998
++++ glibc-2.1.3/md5-crypt/Versions	Sun Jun 11 09:11:03 2000
+@@ -1,5 +1,6 @@
+ libcrypt {
+   GLIBC_2.0 {
+     crypt; crypt_r; encrypt; encrypt_r; fcrypt; setkey; setkey_r;
++    crypt_rn; crypt_ra; crypt_gensalt; crypt_gensalt_rn; crypt_gensalt_ra;
+   }
+ }
