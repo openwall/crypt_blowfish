@@ -25,6 +25,8 @@
 #define BF_FRAME			0x200
 #define ctx				%esp
 
+#define BF_ptr				(ctx)
+
 #define S(N, r)				N+BF_FRAME(ctx,r,4)
 #ifdef DUMBAS
 #define P(N)				0x1000+N+N+N+N+BF_FRAME(ctx)
@@ -111,16 +113,16 @@ _BF_body_r:
 	pushl %ebx
 	pushl %esi
 	pushl %edi
-	subl $BF_FRAME,%eax
-	movl %esp,save_esp
+	subl $BF_FRAME-8,%eax
+	xorl L,L
 	cmpl %esp,%eax
 	ja BF_die
-	movl %eax,%esp
-	xorl L,L
-	addl $0x1000+BF_FRAME,%eax
+	xchgl %eax,%esp
 	xorl R,R
-	movl %eax,BF_ptr
-	movl P(0),tmp2
+	pushl %eax
+	leal 0x1000+BF_FRAME-4(ctx),%eax
+	movl 0x1000+BF_FRAME-4(ctx),tmp2
+	pushl %eax
 	xorl tmp3,tmp3
 BF_loop_P:
 	BF_ENCRYPT_START
@@ -162,7 +164,7 @@ BF_loop_S:
 	movl L,-8(tmp5)
 	movl R,-4(tmp5)
 	ja BF_loop_S
-	movl save_esp,%esp
+	movl 4(%esp),%esp
 	popl %edi
 	popl %esi
 	popl %ebx
@@ -172,12 +174,5 @@ BF_loop_S:
 BF_die:
 	hlt
 	jmp BF_die
-
-.data
-DO_ALIGN(3)
-save_esp:
-.long 0
-BF_ptr:
-.long 0
 
 #endif
