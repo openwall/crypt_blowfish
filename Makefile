@@ -4,8 +4,8 @@
 #
 
 CC = gcc
-AS = gcc
-LD = gcc
+AS = $(CC)
+LD = $(CC)
 RM = rm -f
 CFLAGS = -c -Wall -O2 -fomit-frame-pointer -funroll-loops
 ASFLAGS = -c
