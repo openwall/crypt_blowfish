@@ -374,7 +374,7 @@ to be able to migrate the password hashes to other systems.
 .B Extended BSDI-style DES-based
 .br
 This method is used on BSDI and is also available on at least NetBSD,
-OpenBSD and FreeBSD due to the use of David Burren's FreeSec library.
+OpenBSD, and FreeBSD due to the use of David Burren's FreeSec library.
 .hash _ "_[./0-9A-Za-z]{19}" unlimited 7 56 64 24 "1 to 2**24-1 (must be odd)"
 .PP
 .ti -2
@@ -382,8 +382,8 @@ OpenBSD and FreeBSD due to the use of David Burren's FreeSec library.
 .br
 This is Poul-Henning Kamp's MD5-based password hashing method originally
 developed for FreeBSD.
-It is currently supported on many free Unix-like systems and is a part
-of the official glibc.
+It is currently supported on many free Unix-like systems, on Solaris 10,
+and it is a part of the official glibc.
 Its main disadvantage is the fixed iteration count, which is already
 too low for the currently available hardware.
 .hash "$1$" "\e$1\e$[^$]{1,8}\e$[./0-9A-Za-z]{22}" unlimited 8 "" 128 "6 to 48" 1000
@@ -393,8 +393,8 @@ too low for the currently available hardware.
 .br
 .B bcrypt
 was originally developed by Niels Provos and David Mazieres for OpenBSD
-and is also supported on recent versions of FreeBSD and on several
-GNU/*/Linux distributions.
+and is also supported on recent versions of FreeBSD, Solaris 10, and on
+several GNU/*/Linux distributions.
 It is, however, not a part of the official glibc.
 .PP
 While both
