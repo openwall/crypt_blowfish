@@ -1,0 +1,58 @@
+diff -urpN glibc-2.3.2.orig/crypt/Makefile glibc-2.3.2/crypt/Makefile
+--- glibc-2.3.2.orig/crypt/Makefile	Sat Jul  7 19:20:51 2001
++++ glibc-2.3.2/crypt/Makefile	Fri Feb 27 00:23:48 2004
+@@ -21,14 +21,14 @@
+ #
+ subdir	:= crypt
+ 
+-headers := crypt.h
++headers := crypt.h gnu-crypt.h ow-crypt.h
+ 
+ distribute := md5.h
+ 
+ extra-libs := libcrypt
+ extra-libs-others := $(extra-libs)
+ 
+-libcrypt-routines := crypt-entry md5-crypt md5 crypt crypt_util
++libcrypt-routines := crypt-entry md5-crypt md5 crypt crypt_util crypt_blowfish x86 crypt_gensalt wrapper
+ 
+ tests = cert md5test md5c-test
+ 
+diff -urpN glibc-2.3.2.orig/crypt/Versions glibc-2.3.2/crypt/Versions
+--- glibc-2.3.2.orig/crypt/Versions	Sat Mar  4 00:47:30 2000
++++ glibc-2.3.2/crypt/Versions	Fri Feb 27 00:25:15 2004
+@@ -1,5 +1,6 @@
+ libcrypt {
+   GLIBC_2.0 {
+     crypt; crypt_r; encrypt; encrypt_r; fcrypt; setkey; setkey_r;
++    crypt_rn; crypt_ra; crypt_gensalt; crypt_gensalt_rn; crypt_gensalt_ra;
+   }
+ }
+diff -urpN glibc-2.3.2.orig/crypt/crypt-entry.c glibc-2.3.2/crypt/crypt-entry.c
+--- glibc-2.3.2.orig/crypt/crypt-entry.c	Sat Jul  7 19:20:51 2001
++++ glibc-2.3.2/crypt/crypt-entry.c	Fri Feb 27 00:12:32 2004
+@@ -70,7 +70,7 @@ extern struct crypt_data _ufc_foobar;
+  */
+ 
+ char *
+-__crypt_r (key, salt, data)
++__des_crypt_r (key, salt, data)
+      const char *key;
+      const char *salt;
+      struct crypt_data * __restrict data;
+@@ -115,6 +115,7 @@ __crypt_r (key, salt, data)
+   _ufc_output_conversion_r (res[0], res[1], salt, data);
+   return data->crypt_3_buf;
+ }
++#if 0
+ weak_alias (__crypt_r, crypt_r)
+ 
+ char *
+@@ -130,6 +131,7 @@ crypt (key, salt)
+ 
+   return __crypt_r (key, salt, &_ufc_foobar);
+ }
++#endif
+ 
+ 
+ /*
