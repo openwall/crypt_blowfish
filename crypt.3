@@ -3,7 +3,7 @@
 .\" This manual page in its current form is intended for use on systems
 .\" based on the GNU C Library with crypt_blowfish patched into libcrypt.
 .\"
-.TH CRYPT 3 "4 August 2002" "Openwall Project" "Library functions"
+.TH CRYPT 3 "22 February 2005" "Openwall Project" "Library functions"
 .ad l
 .\" No macros in NAME to keep makewhatis happy.
 .SH NAME
@@ -443,9 +443,16 @@ There's also a
 .B crypt_r
 function on HP-UX and MKS Toolkit, but the prototypes and semantics differ.
 .PP
+.B crypt_gensalt
+is an Openwall extension.
+There's also a
+.B crypt_gensalt
+function on Solaris 10, but the prototypes and semantics differ.
+.PP
 .BR crypt_rn ,
 .BR crypt_ra ,
-.crypt_gensalt " and"
+.BR crypt_gensalt_rn " and"
+.B crypt_gensalt_ra
 are Openwall extensions.
 .SH HISTORY
 A rotor-based
