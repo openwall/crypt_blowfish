@@ -7,7 +7,7 @@ CC = gcc
 AS = $(CC)
 LD = $(CC)
 RM = rm -f
-CFLAGS = -c -Wall -O2 -fomit-frame-pointer -funroll-loops
+CFLAGS = -Wall -O2 -fomit-frame-pointer -funroll-loops
 ASFLAGS = -c
 LDFLAGS = -s
 
@@ -36,7 +36,7 @@ crypt_test: $(TEST_OBJS)
 	$(LD) $(LDFLAGS) $(TEST_OBJS) -o $@
 
 crypt_test.o: wrapper.c
-	$(CC) $(CFLAGS) wrapper.c -DTEST -o $@
+	$(CC) -c $(CFLAGS) wrapper.c -DTEST -o $@
 
 check_threads: crypt_test_threads
 	./crypt_test_threads
@@ -45,7 +45,7 @@ crypt_test_threads: $(TEST_THREADS_OBJS)
 	$(LD) $(LDFLAGS) $(TEST_THREADS_OBJS) -lpthread -o $@
 
 crypt_test_threads.o: wrapper.c
-	$(CC) $(CFLAGS) wrapper.c -DTEST -DTEST_THREADS=4 -o $@
+	$(CC) -c $(CFLAGS) wrapper.c -DTEST -DTEST_THREADS=4 -o $@
 
 man: $(EXTRA_MANS)
 
@@ -53,7 +53,7 @@ $(EXTRA_MANS):
 	echo '.so man3/crypt.3' > $@
 
 .c.o:
-	$(CC) $(CFLAGS) $*.c
+	$(CC) -c $(CFLAGS) $*.c
 
 .S.o:
 	$(AS) $(ASFLAGS) $*.S
