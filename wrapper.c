@@ -284,7 +284,7 @@ static struct {
 	{"$2a$05$abcdefghijklmnopqrstuu5s2v8.iXieOjg/.AySBTTZIIVFJeBui",
 		"0123456789abcdefghijklmnopqrstuvwxyz"
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"},
-	{NULL}
+	{NULL, NULL}
 };
 
 #define which				tests[0]
@@ -354,13 +354,15 @@ int main(void)
 
 	start_real = times(&buf);
 	start_virtual = buf.tms_utime + buf.tms_stime;
-	count = 0;
 
+	count = 0;
+	i = 0;
 	do {
-		if (strcmp(crypt(which.pw, which.hash), which.hash)) {
-			printf("FAILED (crypt/0/%lu)\n", count);
+		if (strcmp(crypt(tests[i].pw, tests[i].hash), tests[i].hash)) {
+			printf("FAILED (crypt/%d/%lu)\n", i, count);
 			return 1;
 		}
+		if (!tests[++i].hash) i = 0;
 		count++;
 	} while (running);
 
