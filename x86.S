@@ -12,6 +12,7 @@
 
 #ifdef UNDERSCORES
 #define _BF_body_r			__BF_body_r
+#define _BF_clean			__BF_clean
 #endif
 
 #ifdef ALIGN_LOG
@@ -23,6 +24,7 @@
 #endif
 
 #define BF_FRAME			0x200
+#define BF_CLEAN			0x300
 #define ctx				%esp
 
 #define BF_ptr				(ctx)
@@ -169,6 +171,27 @@ BF_loop_S:
 	popl %esi
 	popl %ebx
 	popl %ebp
+	ret
+
+.globl _BF_clean
+_BF_clean:
+	leal -32(%esp),%ecx
+	xorl %eax,%eax
+	leal -BF_CLEAN(%esp),%edx
+BF_loop_clean:
+	movl %ecx,%esp
+	movl %eax,(%ecx)
+	movl %eax,4(%ecx)
+	movl %eax,8(%ecx)
+	movl %eax,12(%ecx)
+	subl $32,%ecx
+	movl %eax,16(%esp)
+	movl %eax,20(%esp)
+	movl %eax,24(%esp)
+	movl %eax,28(%esp)
+	cmpl %edx,%esp
+	ja BF_loop_clean
+	leal BF_CLEAN(%edx),%esp
 	ret
 
 BF_die:

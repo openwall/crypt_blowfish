@@ -363,6 +363,18 @@ static unsigned char BF_atoi64[0x60] = {
 	43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 64, 64, 64, 64, 64
 };
 
+/*
+ * This may be optimized out if built with function inlining and no BF_ASM.
+ */
+static void clean(void *data, int size)
+{
+#if BF_ASM
+	extern void _BF_clean(void *data);
+	_BF_clean(data);
+#endif
+	memset(data, 0, size);
+}
+
 #define BF_safe_atoi64(dst, src) \
 { \
 	tmp = (unsigned char)(src); \
@@ -508,13 +520,9 @@ static void BF_swap(BF_word *x, int count)
 	L = tmp4 ^ data.ctx.P[BF_N + 1];
 
 #if BF_ASM
-
-extern void _BF_body_r(BF_ctx *ctx);
 #define BF_body() \
 	_BF_body_r(&data.ctx);
-
 #else
-
 #define BF_body() \
 	L = R = 0; \
 	ptr = data.ctx.P; \
@@ -532,7 +540,6 @@ extern void _BF_body_r(BF_ctx *ctx);
 		*(ptr - 2) = L; \
 		*(ptr - 1) = R; \
 	} while (ptr < &data.ctx.S[3][0xFF]);
-
 #endif
 
 static void BF_set_key(__CONST char *key, BF_key expanded, BF_key initial)
@@ -558,6 +565,9 @@ static void BF_set_key(__CONST char *key, BF_key expanded, BF_key initial)
 char *_crypt_blowfish_rn(__CONST char *key, __CONST char *setting,
 	char *output, int size)
 {
+#if BF_ASM
+	extern void _BF_body_r(BF_ctx *ctx);
+#endif
 	struct {
 		BF_ctx ctx;
 		BF_key expanded_key;
@@ -590,7 +600,7 @@ char *_crypt_blowfish_rn(__CONST char *key, __CONST char *setting,
 
 	count = (BF_word)1 << ((setting[4] - '0') * 10 + (setting[5] - '0'));
 	if (count < 16 || BF_decode(data.binary.salt, &setting[7], 16)) {
-		memset(data.binary.salt, 0, sizeof(data.binary.salt));
+		clean(data.binary.salt, sizeof(data.binary.salt));
 		__set_errno(EINVAL);
 		return NULL;
 	}
@@ -699,7 +709,7 @@ char *_crypt_blowfish_rn(__CONST char *key, __CONST char *setting,
 /* Overwrite the most obvious sensitive data we have on the stack. Note
  * that this does not guarantee there's no sensitive data left on the
  * stack and/or in registers; I'm not aware of portable code that does. */
-	memset(&data, 0, sizeof(data));
+	clean(&data, sizeof(data));
 
 	return output;
 }
