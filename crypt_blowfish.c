@@ -3,7 +3,7 @@
  * and crypt(3) interfaces added, but optimizations specific to password
  * cracking removed.
  *
- * Written by Solar Designer <solar@openwall.com> in 1998-2001, and placed
+ * Written by Solar Designer <solar@openwall.com> in 1998-2002, and placed
  * in the public domain.
  *
  * There's absolutely no warranty.
