@@ -47,7 +47,7 @@
 #ifdef __i386__
 #define BF_ASM				1
 #define BF_SCALE			1
-#elif defined(__alpha__)
+#elif defined(__alpha__) || defined(__hppa__)
 #define BF_ASM				0
 #define BF_SCALE			1
 #else
