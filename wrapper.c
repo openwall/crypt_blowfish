@@ -357,7 +357,10 @@ int main(void)
 	count = 0;
 
 	do {
-		crypt(which.pw, which.hash);
+		if (strcmp(crypt(which.pw, which.hash), which.hash)) {
+			printf("FAILED (crypt/0/%lu)\n", count);
+			return 1;
+		}
 		count++;
 	} while (running);
 
