@@ -13,3 +13,5 @@ Unix Seventh Edition Manual, Volume 2: the password scheme (1978):
 John the Ripper password cracker:
 
 	http://www.openwall.com/john/
+
+$Id: Owl/packages/glibc/crypt_blowfish/LINKS,v 1.2 2002/08/04 02:33:03 solar Exp $

@@ -1,6 +1,6 @@
 These numbers are for 32 iterations ("$2a$05"):
 
-			OpenBSD 3.0 bcrypt(*)	crypt_blowfish 0.4.3
+			OpenBSD 3.0 bcrypt(*)	crypt_blowfish 0.4.4
 Pentium III, 840 MHz	99 c/s			121 c/s (+22%)
 Alpha 21164PC, 533 MHz	55.5 c/s		76.9 c/s (+38%)
 UltraSparc IIi, 400 MHz	49.9 c/s		52.5 c/s (+5%)
@@ -21,3 +21,5 @@ Recent versions of John the Ripper (1.6.25-dev and newer) achieve an
 additional 15% speedup on the Pentium Pro family of processors (which
 includes Pentium III) with a separate version of the assembly code and
 run-time CPU detection.
+
+$Id: Owl/packages/glibc/crypt_blowfish/PERFORMANCE,v 1.4 2002/08/04 02:33:03 solar Exp $
