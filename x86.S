@@ -204,6 +204,7 @@ BF_loop_clean:
 	ret
 
 BF_die:
+/* Oops, need to re-compile with a larger BF_FRAME. */
 	hlt
 	jmp BF_die
 
