@@ -16,6 +16,9 @@
 #include <signal.h>
 #include <sys/time.h>
 #include <sys/times.h>
+#ifdef TEST_THREADS
+#include <pthread.h>
+#endif
 #endif
 
 #define CRYPT_OUTPUT_SIZE		(7 + 22 + 31 + 1)
@@ -289,11 +292,34 @@ static struct {
 
 #define which				tests[0]
 
-static volatile int running;
+static volatile sig_atomic_t running;
 
 static void handle_timer(int signum)
 {
 	running = 0;
+}
+
+static void *run(void *arg)
+{
+	unsigned long count = 0;
+	int i = 0;
+	void *data = NULL;
+	int size = 0x12345678;
+
+	do {
+		if (strcmp(crypt_ra(tests[i].pw, tests[i].hash, &data, &size),
+		    tests[i].hash)) {
+			printf("%d: FAILED (crypt_ra/%d/%lu)\n",
+				(char *)arg - (char *)0, i, count);
+			free(data);
+			return NULL;
+		}
+		if (!tests[++i].hash) i = 0;
+		count++;
+	} while (running);
+
+	free(data);
+	return count + (char *)0;
 }
 
 int main(void)
@@ -306,6 +332,10 @@ int main(void)
 	int size;
 	char *setting1, *setting2;
 	int i;
+#ifdef TEST_THREADS
+	pthread_t t[TEST_THREADS];
+	void *t_retval;
+#endif
 
 	for (i = 0; tests[i].hash; i++)
 	if (strcmp(crypt(tests[i].pw, tests[i].hash), tests[i].hash)) {
@@ -355,16 +385,7 @@ int main(void)
 	start_real = times(&buf);
 	start_virtual = buf.tms_utime + buf.tms_stime;
 
-	count = 0;
-	i = 0;
-	do {
-		if (strcmp(crypt(tests[i].pw, tests[i].hash), tests[i].hash)) {
-			printf("FAILED (crypt/%d/%lu)\n", i, count);
-			return 1;
-		}
-		if (!tests[++i].hash) i = 0;
-		count++;
-	} while (running);
+	count = (char *)run((char *)0) - (char *)0;
 
 	end_real = times(&buf);
 	end_virtual = buf.tms_utime + buf.tms_stime;
@@ -373,6 +394,31 @@ int main(void)
 	printf("%.1f c/s real, %.1f c/s virtual\n",
 		(float)count * CLK_TCK / (end_real - start_real),
 		(float)count * CLK_TCK / (end_virtual - start_virtual));
+
+#ifdef TEST_THREADS
+	running = 1;
+	it.it_value.tv_sec = 60;
+	setitimer(ITIMER_REAL, &it, NULL);
+	start_real = times(&buf);
+
+	for (i = 0; i < TEST_THREADS; i++)
+	if (pthread_create(&t[i], NULL, run, i + (char *)0)) {
+		perror("pthread_create");
+		return 1;
+	}
+
+	for (i = 0; i < TEST_THREADS; i++) {
+		if (pthread_join(t[i], &t_retval)) {
+			perror("pthread_join");
+			continue;
+		}
+		if (!t_retval) continue;
+		count = (char *)t_retval - (char *)0;
+		end_real = times(&buf);
+		printf("%d: %.1f c/s real\n", i,
+			(float)count * CLK_TCK / (end_real - start_real));
+	}
+#endif
 
 	return 0;
 }

@@ -15,8 +15,8 @@ be needed as well.  These are not (yet?) a part of this package.
 
 Instructions on using the routines in one of the two common ways are
 given below.  It is recommended that you test the routines on your
-system before you start.  Simply type "make check" for a benchmark,
-then "make clean".
+system before you start.  Type "make check" or "make check_threads"
+(if you have the POSIX threads library), then "make clean".
 
 
 1. Using the routines in your programs.
@@ -45,4 +45,4 @@ routines as well.
 -- 
 Solar Designer <solar@openwall.com>
 
-$Id: Owl/packages/glibc/crypt_blowfish/README,v 1.2 2002/08/04 02:33:03 solar Exp $
+$Id: Owl/packages/glibc/crypt_blowfish/README,v 1.3 2002/11/08 00:46:15 solar Exp $
