@@ -22,4 +22,4 @@ additional 15% speedup on the Pentium Pro family of processors (which
 includes Pentium III) with a separate version of the assembly code and
 run-time CPU detection.
 
-$Id: Owl/packages/glibc/crypt_blowfish/PERFORMANCE,v 1.4 2002/08/04 02:33:03 solar Exp $
+$Owl: Owl/packages/glibc/crypt_blowfish/PERFORMANCE,v 1.5 2005/11/16 13:09:47 solar Exp $

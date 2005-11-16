@@ -26,4 +26,4 @@ John the Ripper password cracker:
 
 	http://www.openwall.com/john/
 
-$Id: Owl/packages/glibc/crypt_blowfish/LINKS,v 1.3 2004/04/25 23:52:42 solar Exp $
+$Owl: Owl/packages/glibc/crypt_blowfish/LINKS,v 1.4 2005/11/16 13:09:47 solar Exp $

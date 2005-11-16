@@ -55,4 +55,4 @@ routines as well.
 -- 
 Solar Designer <solar at openwall.com>
 
-$Id: Owl/packages/glibc/crypt_blowfish/README,v 1.4 2004/04/25 23:53:12 solar Exp $
+$Owl: Owl/packages/glibc/crypt_blowfish/README,v 1.5 2005/11/16 13:09:47 solar Exp $
