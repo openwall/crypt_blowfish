@@ -312,7 +312,7 @@ static void *run(void *arg)
 		if (strcmp(crypt_ra(tests[i].pw, tests[i].hash, &data, &size),
 		    tests[i].hash)) {
 			printf("%d: FAILED (crypt_ra/%d/%lu)\n",
-				(char *)arg - (char *)0, i, count);
+				(int)((char *)arg - (char *)0), i, count);
 			free(data);
 			return NULL;
 		}
