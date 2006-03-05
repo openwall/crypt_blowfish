@@ -10,7 +10,7 @@
  *
  * It is my intent that you should be able to use this on your system,
  * as a part of a software package, or anywhere else to improve security,
- * ensure compatibility, or for any other purpose. I would appreciate
+ * ensure compatibility, or for any other purpose.  I would appreciate
  * it if you give credit where it is due and keep your modifications in
  * the public domain as well, but I don't require that in order to let
  * you place this code and any modifications you make under a license
@@ -18,7 +18,7 @@
  *
  * This implementation is compatible with OpenBSD bcrypt.c (version 2a)
  * by Niels Provos <provos at citi.umich.edu>, and uses some of his
- * ideas. The password hashing algorithm was designed by David Mazieres
+ * ideas.  The password hashing algorithm was designed by David Mazieres
  * <dm at lcs.mit.edu>.
  *
  * There's a paper on the algorithm that explains its design decisions:
@@ -708,7 +708,7 @@ char *_crypt_blowfish_rn(__CONST char *key, __CONST char *setting,
 	BF_encode(&output[7 + 22], data.binary.output, 23);
 	output[7 + 22 + 31] = '\0';
 
-/* Overwrite the most obvious sensitive data we have on the stack. Note
+/* Overwrite the most obvious sensitive data we have on the stack.  Note
  * that this does not guarantee there's no sensitive data left on the
  * stack and/or in registers; I'm not aware of portable code that does. */
 	clean(&data, sizeof(data));

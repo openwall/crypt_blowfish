@@ -102,7 +102,7 @@ static char *_crypt_retval_magic(char *retval, __CONST char *setting,
 /*
  * Applications may re-use the same instance of struct crypt_data without
  * resetting the initialized field in order to let crypt_r() skip some of
- * its initialization code. Thus, it is important that our multiple hashing
+ * its initialization code.  Thus, it is important that our multiple hashing
  * algorithms either don't conflict with each other in their use of the
  * data area or reset the initialized field themselves whenever required.
  * Currently, the hashing algorithms simply have no conflicts: the first
