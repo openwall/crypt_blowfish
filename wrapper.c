@@ -13,6 +13,7 @@
 
 #ifdef TEST
 #include <stdio.h>
+#include <unistd.h>
 #include <signal.h>
 #include <time.h>
 #include <sys/time.h>
@@ -327,7 +328,7 @@ int main(void)
 {
 	struct itimerval it;
 	struct tms buf;
-	clock_t start_real, start_virtual, end_real, end_virtual;
+	clock_t clk_tck, start_real, start_virtual, end_real, end_virtual;
 	unsigned long count;
 	void *data;
 	int size;
@@ -376,6 +377,12 @@ int main(void)
 	free(setting2);
 	free(data);
 
+#if defined(_SC_CLK_TCK) || !defined(CLK_TCK)
+	clk_tck = sysconf(_SC_CLK_TCK);
+#else
+	clk_tck = CLK_TCK;
+#endif
+
 	running = 1;
 	signal(SIGALRM, handle_timer);
 
@@ -393,8 +400,8 @@ int main(void)
 	if (end_virtual == start_virtual) end_virtual++;
 
 	printf("%.1f c/s real, %.1f c/s virtual\n",
-		(float)count * CLK_TCK / (end_real - start_real),
-		(float)count * CLK_TCK / (end_virtual - start_virtual));
+		(float)count * clk_tck / (end_real - start_real),
+		(float)count * clk_tck / (end_virtual - start_virtual));
 
 #ifdef TEST_THREADS
 	running = 1;
@@ -417,7 +424,7 @@ int main(void)
 		count = (char *)t_retval - (char *)0;
 		end_real = times(&buf);
 		printf("%d: %.1f c/s real\n", i,
-			(float)count * CLK_TCK / (end_real - start_real));
+			(float)count * clk_tck / (end_real - start_real));
 	}
 #endif
 
