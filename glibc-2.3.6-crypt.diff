@@ -1,6 +1,5 @@
-diff -urpN glibc-2.3.2.orig/crypt/Makefile glibc-2.3.2/crypt/Makefile
---- glibc-2.3.2.orig/crypt/Makefile	Sat Jul  7 19:20:51 2001
-+++ glibc-2.3.2/crypt/Makefile	Fri Feb 27 00:23:48 2004
+--- glibc-2.3.6.orig/crypt/Makefile	2001-07-06 04:54:45 +0000
++++ glibc-2.3.6/crypt/Makefile	2004-02-27 00:23:48 +0000
 @@ -21,14 +21,14 @@
  #
  subdir	:= crypt
@@ -18,9 +17,8 @@ diff -urpN glibc-2.3.2.orig/crypt/Makefile glibc-2.3.2/crypt/Makefile
  
  tests = cert md5test md5c-test
  
-diff -urpN glibc-2.3.2.orig/crypt/Versions glibc-2.3.2/crypt/Versions
---- glibc-2.3.2.orig/crypt/Versions	Sat Mar  4 00:47:30 2000
-+++ glibc-2.3.2/crypt/Versions	Fri Feb 27 00:25:15 2004
+--- glibc-2.3.6.orig/crypt/Versions	2000-03-04 00:47:30 +0000
++++ glibc-2.3.6/crypt/Versions	2004-02-27 00:25:15 +0000
 @@ -1,5 +1,6 @@
  libcrypt {
    GLIBC_2.0 {
@@ -28,9 +26,8 @@ diff -urpN glibc-2.3.2.orig/crypt/Versions glibc-2.3.2/crypt/Versions
 +    crypt_rn; crypt_ra; crypt_gensalt; crypt_gensalt_rn; crypt_gensalt_ra;
    }
  }
-diff -urpN glibc-2.3.2.orig/crypt/crypt-entry.c glibc-2.3.2/crypt/crypt-entry.c
---- glibc-2.3.2.orig/crypt/crypt-entry.c	Sat Jul  7 19:20:51 2001
-+++ glibc-2.3.2/crypt/crypt-entry.c	Fri Feb 27 00:12:32 2004
+--- glibc-2.3.6.orig/crypt/crypt-entry.c	2001-07-06 05:18:49 +0000
++++ glibc-2.3.6/crypt/crypt-entry.c	2004-02-27 00:12:32 +0000
 @@ -70,7 +70,7 @@ extern struct crypt_data _ufc_foobar;
   */
  
@@ -48,11 +45,8 @@ diff -urpN glibc-2.3.2.orig/crypt/crypt-entry.c glibc-2.3.2/crypt/crypt-entry.c
  weak_alias (__crypt_r, crypt_r)
  
  char *
-@@ -130,6 +131,7 @@ crypt (key, salt)
- 
-   return __crypt_r (key, salt, &_ufc_foobar);
+@@ -147,3 +148,4 @@ __fcrypt (key, salt)
+   return crypt (key, salt);
  }
+ #endif
 +#endif
- 
- 
- /*
