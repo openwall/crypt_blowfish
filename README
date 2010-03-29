@@ -40,7 +40,7 @@ the library as usual.
 
 For versions 2.2 to 2.3.6 (and likely also for some newer ones),
 extract the library sources and the linuxthreads add-on as usual.
-Apply the patch for glibc 2.3.2 provided in this package.  Enter
+Apply the patch for glibc 2.3.6 provided in this package.  Enter
 crypt/ and rename crypt.h to gnu-crypt.h within that directory.  Copy
 the C sources, header, and assembly (x86.S) files from this package in
 there as well (but be sure you don't overwrite the Makefile).
@@ -55,4 +55,4 @@ routines as well.
 -- 
 Solar Designer <solar at openwall.com>
 
-$Owl: Owl/packages/glibc/crypt_blowfish/README,v 1.6 2006/01/02 19:04:19 solar Exp $
+$Owl: Owl/packages/glibc/crypt_blowfish/README,v 1.7 2010/03/29 20:07:06 solar Exp $
