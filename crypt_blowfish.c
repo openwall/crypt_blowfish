@@ -56,6 +56,7 @@
 #endif
 
 typedef unsigned int BF_word;
+typedef signed int BF_word_signed;
 
 /* Number of Blowfish rounds, this is also hardcoded into a few places */
 #define BF_N				16
@@ -544,7 +545,8 @@ static void BF_swap(BF_word *x, int count)
 	} while (ptr < &data.ctx.S[3][0xFF]);
 #endif
 
-static void BF_set_key(__CONST char *key, BF_key expanded, BF_key initial)
+static void BF_set_key(__CONST char *key, BF_key expanded, BF_key initial,
+    int sign_extension_bug)
 {
 	__CONST char *ptr = key;
 	int i, j;
@@ -554,7 +556,10 @@ static void BF_set_key(__CONST char *key, BF_key expanded, BF_key initial)
 		tmp = 0;
 		for (j = 0; j < 4; j++) {
 			tmp <<= 8;
-			tmp |= *ptr;
+			if (sign_extension_bug)
+				tmp |= (BF_word_signed)(signed char)*ptr;
+			else
+				tmp |= (unsigned char)*ptr;
 
 			if (!*ptr) ptr = key; else ptr++;
 		}
@@ -591,7 +596,7 @@ char *_crypt_blowfish_rn(__CONST char *key, __CONST char *setting,
 
 	if (setting[0] != '$' ||
 	    setting[1] != '2' ||
-	    setting[2] != 'a' ||
+	    (setting[2] != 'a' && setting[2] != 'x') ||
 	    setting[3] != '$' ||
 	    setting[4] < '0' || setting[4] > '3' ||
 	    setting[5] < '0' || setting[5] > '9' ||
@@ -609,7 +614,7 @@ char *_crypt_blowfish_rn(__CONST char *key, __CONST char *setting,
 	}
 	BF_swap(data.binary.salt, 4);
 
-	BF_set_key(key, data.expanded_key, data.ctx.P);
+	BF_set_key(key, data.expanded_key, data.ctx.P, setting[2] == 'x');
 
 	memcpy(data.ctx.S, BF_init_state.S, sizeof(data.ctx.S));
 
