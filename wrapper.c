@@ -339,6 +339,7 @@ static volatile sig_atomic_t running;
 
 static void handle_timer(int signum)
 {
+	(void) signum;
 	running = 0;
 }
 
