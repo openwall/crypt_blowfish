@@ -649,51 +649,33 @@ static char *BF_crypt(const char *key, const char *setting,
 	} while (ptr < &data.ctx.S[3][0xFF]);
 
 	do {
-		data.ctx.P[0] ^= data.expanded_key[0];
-		data.ctx.P[1] ^= data.expanded_key[1];
-		data.ctx.P[2] ^= data.expanded_key[2];
-		data.ctx.P[3] ^= data.expanded_key[3];
-		data.ctx.P[4] ^= data.expanded_key[4];
-		data.ctx.P[5] ^= data.expanded_key[5];
-		data.ctx.P[6] ^= data.expanded_key[6];
-		data.ctx.P[7] ^= data.expanded_key[7];
-		data.ctx.P[8] ^= data.expanded_key[8];
-		data.ctx.P[9] ^= data.expanded_key[9];
-		data.ctx.P[10] ^= data.expanded_key[10];
-		data.ctx.P[11] ^= data.expanded_key[11];
-		data.ctx.P[12] ^= data.expanded_key[12];
-		data.ctx.P[13] ^= data.expanded_key[13];
-		data.ctx.P[14] ^= data.expanded_key[14];
-		data.ctx.P[15] ^= data.expanded_key[15];
-		data.ctx.P[16] ^= data.expanded_key[16];
-		data.ctx.P[17] ^= data.expanded_key[17];
+		int done;
 
-		BF_body();
+		for (i = 0; i < BF_N + 2; i += 2) {
+			data.ctx.P[i] ^= data.expanded_key[i];
+			data.ctx.P[i + 1] ^= data.expanded_key[i + 1];
+		}
 
-		tmp1 = data.binary.salt[0];
-		tmp2 = data.binary.salt[1];
-		tmp3 = data.binary.salt[2];
-		tmp4 = data.binary.salt[3];
-		data.ctx.P[0] ^= tmp1;
-		data.ctx.P[1] ^= tmp2;
-		data.ctx.P[2] ^= tmp3;
-		data.ctx.P[3] ^= tmp4;
-		data.ctx.P[4] ^= tmp1;
-		data.ctx.P[5] ^= tmp2;
-		data.ctx.P[6] ^= tmp3;
-		data.ctx.P[7] ^= tmp4;
-		data.ctx.P[8] ^= tmp1;
-		data.ctx.P[9] ^= tmp2;
-		data.ctx.P[10] ^= tmp3;
-		data.ctx.P[11] ^= tmp4;
-		data.ctx.P[12] ^= tmp1;
-		data.ctx.P[13] ^= tmp2;
-		data.ctx.P[14] ^= tmp3;
-		data.ctx.P[15] ^= tmp4;
-		data.ctx.P[16] ^= tmp1;
-		data.ctx.P[17] ^= tmp2;
+		done = 0;
+		do {
+			BF_body();
+			if (done)
+				break;
+			done = 1;
 
-		BF_body();
+			tmp1 = data.binary.salt[0];
+			tmp2 = data.binary.salt[1];
+			tmp3 = data.binary.salt[2];
+			tmp4 = data.binary.salt[3];
+			for (i = 0; i < BF_N; i += 4) {
+				data.ctx.P[i] ^= tmp1;
+				data.ctx.P[i + 1] ^= tmp2;
+				data.ctx.P[i + 2] ^= tmp3;
+				data.ctx.P[i + 3] ^= tmp4;
+			}
+			data.ctx.P[16] ^= tmp1;
+			data.ctx.P[17] ^= tmp2;
+		} while (1);
 	} while (--count);
 
 	for (i = 0; i < 6; i += 2) {
