@@ -38,13 +38,6 @@
 #define __set_errno(val) errno = (val)
 #endif
 
-#undef __CONST
-#ifdef __GNUC__
-#define __CONST __const
-#else
-#define __CONST
-#endif
-
 /*
  * Please keep this enabled.  We really don't want incompatible hashes to be
  * produced.  The performance cost of this quick self-test is around 0.6% at
@@ -395,11 +388,11 @@ static void clean(void *data, int size)
 	(dst) = tmp; \
 }
 
-static int BF_decode(BF_word *dst, __CONST char *src, int size)
+static int BF_decode(BF_word *dst, const char *src, int size)
 {
 	unsigned char *dptr = (unsigned char *)dst;
 	unsigned char *end = dptr + size;
-	__CONST unsigned char *sptr = (unsigned char *)src;
+	const unsigned char *sptr = (unsigned char *)src;
 	unsigned int tmp, c1, c2, c3, c4;
 
 	do {
@@ -419,10 +412,10 @@ static int BF_decode(BF_word *dst, __CONST char *src, int size)
 	return 0;
 }
 
-static void BF_encode(char *dst, __CONST BF_word *src, int size)
+static void BF_encode(char *dst, const BF_word *src, int size)
 {
-	__CONST unsigned char *sptr = (unsigned char *)src;
-	__CONST unsigned char *end = sptr + size;
+	const unsigned char *sptr = (unsigned char *)src;
+	const unsigned char *end = sptr + size;
 	unsigned char *dptr = (unsigned char *)dst;
 	unsigned int c1, c2;
 
@@ -553,10 +546,10 @@ static void BF_swap(BF_word *x, int count)
 	} while (ptr < &data.ctx.S[3][0xFF]);
 #endif
 
-static void BF_set_key(__CONST char *key, BF_key expanded, BF_key initial,
+static void BF_set_key(const char *key, BF_key expanded, BF_key initial,
     int sign_extension_bug)
 {
-	__CONST char *ptr = key;
+	const char *ptr = key;
 	int i, j;
 	BF_word tmp;
 
@@ -577,7 +570,7 @@ static void BF_set_key(__CONST char *key, BF_key expanded, BF_key initial,
 	}
 }
 
-static char *BF_crypt(__CONST char *key, __CONST char *setting,
+static char *BF_crypt(const char *key, const char *setting,
 	char *output, int size,
 	BF_word min)
 {
@@ -733,20 +726,20 @@ static char *BF_crypt(__CONST char *key, __CONST char *setting,
 	return output;
 }
 
-char *_crypt_blowfish_rn(__CONST char *key, __CONST char *setting,
+char *_crypt_blowfish_rn(const char *key, const char *setting,
 	char *output, int size)
 {
 #ifdef BF_SELF_TEST
-	__CONST char *test_key = "8b \xd0\xc1\xd2\xcf\xcc\xd8";
-	__CONST char *test_2a =
+	const char *test_key = "8b \xd0\xc1\xd2\xcf\xcc\xd8";
+	const char *test_2a =
 	    "$2a$00$abcdefghijklmnopqrstuui1D709vfamulimlGcq0qq3UvuUasvEa"
 	    "\0"
 	    "canary";
-	__CONST char *test_2x =
+	const char *test_2x =
 	    "$2x$00$abcdefghijklmnopqrstuuVUrPmXD6q/nVSSp7pNDhCR9071IfIRe"
 	    "\0"
 	    "canary";
-	__CONST char *test_hash, *p;
+	const char *test_hash, *p;
 	int ok;
 	char buf[7 + 22 + 31 + 1 + 6 + 1];
 
@@ -777,7 +770,7 @@ char *_crypt_blowfish_rn(__CONST char *key, __CONST char *setting,
 }
 
 char *_crypt_gensalt_blowfish_rn(unsigned long count,
-	__CONST char *input, int size, char *output, int output_size)
+	const char *input, int size, char *output, int output_size)
 {
 	if (size < 16 || output_size < 7 + 22 + 1 ||
 	    (count && (count < 4 || count > 31))) {
@@ -796,7 +789,7 @@ char *_crypt_gensalt_blowfish_rn(unsigned long count,
 	output[5] = '0' + count % 10;
 	output[6] = '$';
 
-	BF_encode(&output[7], (__CONST BF_word *)input, 16);
+	BF_encode(&output[7], (const BF_word *)input, 16);
 	output[7 + 22] = '\0';
 
 	return output;

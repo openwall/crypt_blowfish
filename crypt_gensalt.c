@@ -14,18 +14,11 @@
 #define __set_errno(val) errno = (val)
 #endif
 
-#undef __CONST
-#ifdef __GNUC__
-#define __CONST __const
-#else
-#define __CONST
-#endif
-
 unsigned char _crypt_itoa64[64 + 1] =
 	"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 char *_crypt_gensalt_traditional_rn(unsigned long count,
-	__CONST char *input, int size, char *output, int output_size)
+	const char *input, int size, char *output, int output_size)
 {
 	if (size < 2 || output_size < 2 + 1 || (count && count != 25)) {
 		if (output_size > 0) output[0] = '\0';
@@ -41,7 +34,7 @@ char *_crypt_gensalt_traditional_rn(unsigned long count,
 }
 
 char *_crypt_gensalt_extended_rn(unsigned long count,
-	__CONST char *input, int size, char *output, int output_size)
+	const char *input, int size, char *output, int output_size)
 {
 	unsigned long value;
 
@@ -74,7 +67,7 @@ char *_crypt_gensalt_extended_rn(unsigned long count,
 }
 
 char *_crypt_gensalt_md5_rn(unsigned long count,
-	__CONST char *input, int size, char *output, int output_size)
+	const char *input, int size, char *output, int output_size)
 {
 	unsigned long value;
 

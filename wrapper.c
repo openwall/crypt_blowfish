@@ -31,18 +31,18 @@
 #endif
 #include "ow-crypt.h"
 
-extern char *_crypt_blowfish_rn(__CONST char *key, __CONST char *setting,
+extern char *_crypt_blowfish_rn(const char *key, const char *setting,
 	char *output, int size);
 extern char *_crypt_gensalt_blowfish_rn(unsigned long count,
-	__CONST char *input, int size, char *output, int output_size);
+	const char *input, int size, char *output, int output_size);
 
 extern unsigned char _crypt_itoa64[];
 extern char *_crypt_gensalt_traditional_rn(unsigned long count,
-	__CONST char *input, int size, char *output, int output_size);
+	const char *input, int size, char *output, int output_size);
 extern char *_crypt_gensalt_extended_rn(unsigned long count,
-	__CONST char *input, int size, char *output, int output_size);
+	const char *input, int size, char *output, int output_size);
 extern char *_crypt_gensalt_md5_rn(unsigned long count,
-	__CONST char *input, int size, char *output, int output_size);
+	const char *input, int size, char *output, int output_size);
 
 #if defined(__GLIBC__) && defined(_LIBC)
 /* crypt.h from glibc-crypt-2.1 will define struct crypt_data for us */
@@ -83,7 +83,7 @@ static int _crypt_data_alloc(void **data, int *size, int need)
 	return 0;
 }
 
-static char *_crypt_retval_magic(char *retval, __CONST char *setting,
+static char *_crypt_retval_magic(char *retval, const char *setting,
 	char *output)
 {
 	if (retval) return retval;
@@ -165,12 +165,12 @@ char *__crypt(__const char *key, __const char *setting)
 		setting, (char *)&_ufc_foobar);
 }
 #else
-char *crypt_rn(__CONST char *key, __CONST char *setting, void *data, int size)
+char *crypt_rn(const char *key, const char *setting, void *data, int size)
 {
 	return _crypt_blowfish_rn(key, setting, (char *)data, size);
 }
 
-char *crypt_ra(__CONST char *key, __CONST char *setting,
+char *crypt_ra(const char *key, const char *setting,
 	void **data, int *size)
 {
 	if (_crypt_data_alloc(data, size, CRYPT_OUTPUT_SIZE))
@@ -178,14 +178,14 @@ char *crypt_ra(__CONST char *key, __CONST char *setting,
 	return _crypt_blowfish_rn(key, setting, (char *)*data, *size);
 }
 
-char *crypt_r(__CONST char *key, __CONST char *setting, void *data)
+char *crypt_r(const char *key, const char *setting, void *data)
 {
 	return _crypt_retval_magic(
 		crypt_rn(key, setting, data, CRYPT_OUTPUT_SIZE),
 		setting, (char *)data);
 }
 
-char *crypt(__CONST char *key, __CONST char *setting)
+char *crypt(const char *key, const char *setting)
 {
 	static char output[CRYPT_OUTPUT_SIZE];
 
@@ -199,11 +199,11 @@ char *crypt(__CONST char *key, __CONST char *setting)
 #define __crypt_gensalt crypt_gensalt
 #endif
 
-char *__crypt_gensalt_rn(__CONST char *prefix, unsigned long count,
-	__CONST char *input, int size, char *output, int output_size)
+char *__crypt_gensalt_rn(const char *prefix, unsigned long count,
+	const char *input, int size, char *output, int output_size)
 {
 	char *(*use)(unsigned long count,
-		__CONST char *input, int size, char *output, int output_size);
+		const char *input, int size, char *output, int output_size);
 
 	/* This may be supported on some platforms in the future */
 	if (!input) {
@@ -233,8 +233,8 @@ char *__crypt_gensalt_rn(__CONST char *prefix, unsigned long count,
 	return use(count, input, size, output, output_size);
 }
 
-char *__crypt_gensalt_ra(__CONST char *prefix, unsigned long count,
-	__CONST char *input, int size)
+char *__crypt_gensalt_ra(const char *prefix, unsigned long count,
+	const char *input, int size)
 {
 	char output[CRYPT_GENSALT_OUTPUT_SIZE];
 	char *retval;
@@ -254,8 +254,8 @@ char *__crypt_gensalt_ra(__CONST char *prefix, unsigned long count,
 	return retval;
 }
 
-char *__crypt_gensalt(__CONST char *prefix, unsigned long count,
-	__CONST char *input, int size)
+char *__crypt_gensalt(const char *prefix, unsigned long count,
+	const char *input, int size)
 {
 	static char output[CRYPT_GENSALT_OUTPUT_SIZE];
 
