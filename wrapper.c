@@ -192,8 +192,9 @@ char *crypt(const char *key, const char *setting)
 char *__crypt_gensalt_rn(const char *prefix, unsigned long count,
 	const char *input, int size, char *output, int output_size)
 {
-	char *(*use)(unsigned long count,
-		const char *input, int size, char *output, int output_size);
+	char *(*use)(unsigned long _count,
+		const char *_input, int _size,
+		char *_output, int _output_size);
 
 	/* This may be supported on some platforms in the future */
 	if (!input) {
