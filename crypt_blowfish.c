@@ -374,7 +374,7 @@ static unsigned char BF_atoi64[0x60] = {
 static void clean(void *data, int size)
 {
 #if BF_ASM
-	extern void _BF_clean(void *data);
+	extern void _BF_clean(void *_data);
 #endif
 	memset(data, 0, size);
 #if BF_ASM
@@ -395,7 +395,7 @@ static int BF_decode(BF_word *dst, const char *src, int size)
 {
 	unsigned char *dptr = (unsigned char *)dst;
 	unsigned char *end = dptr + size;
-	const unsigned char *sptr = (unsigned char *)src;
+	const unsigned char *sptr = (const unsigned char *)src;
 	unsigned int tmp, c1, c2, c3, c4;
 
 	do {
@@ -417,7 +417,7 @@ static int BF_decode(BF_word *dst, const char *src, int size)
 
 static void BF_encode(char *dst, const BF_word *src, int size)
 {
-	const unsigned char *sptr = (unsigned char *)src;
+	const unsigned char *sptr = (const unsigned char *)src;
 	const unsigned char *end = sptr + size;
 	unsigned char *dptr = (unsigned char *)dst;
 	unsigned int c1, c2;
