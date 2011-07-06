@@ -35,7 +35,7 @@ check: crypt_test
 crypt_test: $(TEST_OBJS)
 	$(LD) $(LDFLAGS) $(TEST_OBJS) -o $@
 
-crypt_test.o: wrapper.c
+crypt_test.o: wrapper.c ow-crypt.h crypt_blowfish.h crypt_gensalt.h
 	$(CC) -c $(CFLAGS) wrapper.c -DTEST -o $@
 
 check_threads: crypt_test_threads
@@ -44,13 +44,17 @@ check_threads: crypt_test_threads
 crypt_test_threads: $(TEST_THREADS_OBJS)
 	$(LD) $(LDFLAGS) $(TEST_THREADS_OBJS) -lpthread -o $@
 
-crypt_test_threads.o: wrapper.c
+crypt_test_threads.o: wrapper.c ow-crypt.h crypt_blowfish.h crypt_gensalt.h
 	$(CC) -c $(CFLAGS) wrapper.c -DTEST -DTEST_THREADS=4 -o $@
 
 man: $(EXTRA_MANS)
 
 $(EXTRA_MANS):
 	echo '.so man3/crypt.3' > $@
+
+crypt_blowfish.o: crypt_blowfish.h
+crypt_gensalt.o: crypt_gensalt.h
+wrapper.o: crypt.h ow-crypt.h crypt_blowfish.h crypt_gensalt.h
 
 .c.o:
 	$(CC) -c $(CFLAGS) $*.c

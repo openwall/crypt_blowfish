@@ -31,18 +31,8 @@
 #endif
 #include "ow-crypt.h"
 
-extern char *_crypt_blowfish_rn(const char *key, const char *setting,
-	char *output, int size);
-extern char *_crypt_gensalt_blowfish_rn(unsigned long count,
-	const char *input, int size, char *output, int output_size);
-
-extern unsigned char _crypt_itoa64[];
-extern char *_crypt_gensalt_traditional_rn(unsigned long count,
-	const char *input, int size, char *output, int output_size);
-extern char *_crypt_gensalt_extended_rn(unsigned long count,
-	const char *input, int size, char *output, int output_size);
-extern char *_crypt_gensalt_md5_rn(unsigned long count,
-	const char *input, int size, char *output, int output_size);
+#include "crypt_blowfish.h"
+#include "crypt_gensalt.h"
 
 #if defined(__GLIBC__) && defined(_LIBC)
 /* crypt.h from glibc-crypt-2.1 will define struct crypt_data for us */

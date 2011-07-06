@@ -38,6 +38,9 @@
 #define __set_errno(val) errno = (val)
 #endif
 
+/* Just to make sure the prototypes match the actual definitions */
+#include "crypt_blowfish.h"
+
 /*
  * Please keep this enabled.  We really don't want incompatible hashes to be
  * produced.  The performance cost of this quick self-test is around 0.6% at
