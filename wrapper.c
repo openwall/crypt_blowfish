@@ -74,16 +74,13 @@ static int _crypt_data_alloc(void **data, int *size, int need)
 }
 
 static char *_crypt_retval_magic(char *retval, const char *setting,
-	char *output)
+	char *output, int size)
 {
-	if (retval) return retval;
+	if (retval)
+		return retval;
 
-	output[0] = '*';
-	output[1] = '0';
-	output[2] = '\0';
-
-	if (setting[0] == '*' && setting[1] == '0')
-		output[1] = '1';
+	if (_crypt_output_magic(setting, output, size))
+		return NULL; /* shouldn't happen */
 
 	return output;
 }
@@ -145,14 +142,14 @@ char *__crypt_r(__const char *key, __const char *setting,
 {
 	return _crypt_retval_magic(
 		__crypt_rn(key, setting, data, sizeof(*data)),
-		setting, (char *)data);
+		setting, (char *)data, sizeof(*data));
 }
 
 char *__crypt(__const char *key, __const char *setting)
 {
 	return _crypt_retval_magic(
 		__crypt_rn(key, setting, &_ufc_foobar, sizeof(_ufc_foobar)),
-		setting, (char *)&_ufc_foobar);
+		setting, (char *)&_ufc_foobar, sizeof(_ufc_foobar));
 }
 #else
 char *crypt_rn(const char *key, const char *setting, void *data, int size)
@@ -172,7 +169,7 @@ char *crypt_r(const char *key, const char *setting, void *data)
 {
 	return _crypt_retval_magic(
 		crypt_rn(key, setting, data, CRYPT_OUTPUT_SIZE),
-		setting, (char *)data);
+		setting, (char *)data, CRYPT_OUTPUT_SIZE);
 }
 
 char *crypt(const char *key, const char *setting)
@@ -181,7 +178,7 @@ char *crypt(const char *key, const char *setting)
 
 	return _crypt_retval_magic(
 		crypt_rn(key, setting, output, sizeof(output)),
-		setting, output);
+		setting, output, sizeof(output));
 }
 
 #define __crypt_gensalt_rn crypt_gensalt_rn

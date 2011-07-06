@@ -729,10 +729,26 @@ static char *BF_crypt(const char *key, const char *setting,
 	return output;
 }
 
+int _crypt_output_magic(const char *setting, char *output, int size)
+{
+	if (size < 3)
+		return -1;
+
+	output[0] = '*';
+	output[1] = '0';
+	output[2] = '\0';
+
+	if (setting[0] == '*' && setting[1] == '0')
+		output[1] = '1';
+
+	return 0;
+}
+
 char *_crypt_blowfish_rn(const char *key, const char *setting,
 	char *output, int size)
 {
 #ifdef BF_SELF_TEST
+	char *retval;
 	const char *test_key = "8b \xd0\xc1\xd2\xcf\xcc\xd8";
 	const char *test_2a =
 	    "$2a$00$abcdefghijklmnopqrstuui1D709vfamulimlGcq0qq3UvuUasvEa"
@@ -746,7 +762,8 @@ char *_crypt_blowfish_rn(const char *key, const char *setting,
 	int ok;
 	char buf[7 + 22 + 31 + 1 + 6 + 1];
 
-	output = BF_crypt(key, setting, output, size, 16);
+	_crypt_output_magic(setting, output, size);
+	retval = BF_crypt(key, setting, output, size, 16);
 
 /* Do a quick self-test.  This also happens to overwrite BF_crypt()'s data. */
 	test_hash = (setting[2] == 'x') ? test_2x : test_2a;
@@ -761,13 +778,15 @@ char *_crypt_blowfish_rn(const char *key, const char *setting,
 	clean(&buf, sizeof(buf));
 
 	if (ok)
-		return output;
+		return retval;
 
 /* Should not happen */
+	_crypt_output_magic(setting, output, size);
 	__set_errno(EINVAL); /* pretend we don't support this hash type */
 	return NULL;
 #else
 #warning Self-test is disabled, please enable
+	_crypt_output_magic(setting, output, size);
 	return BF_crypt(key, setting, output, size, 16);
 #endif
 }
