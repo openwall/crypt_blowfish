@@ -601,7 +601,7 @@ static char *BF_crypt(const char *key, const char *setting,
 
 	if (setting[0] != '$' ||
 	    setting[1] != '2' ||
-	    (setting[2] != 'a' && setting[2] != 'x') ||
+	    (setting[2] != 'a' && setting[2] != 'x' && setting[2] != 'y') ||
 	    setting[3] != '$' ||
 	    setting[4] < '0' || setting[4] > '3' ||
 	    setting[5] < '0' || setting[5] > '9' ||
@@ -702,6 +702,9 @@ static char *BF_crypt(const char *key, const char *setting,
 	output[7 + 22 + 31] = '\0';
 
 #ifndef BF_SELF_TEST
+	if (output[2] == 'y')
+		output[2] = 'a'; /* unknown correctness */
+
 /* Overwrite the most obvious sensitive data we have on the stack.  Note
  * that this does not guarantee there's no sensitive data left on the
  * stack and/or in registers; I'm not aware of portable code that does. */
@@ -787,7 +790,11 @@ char *_crypt_gensalt_blowfish_rn(unsigned long count,
 
 	output[0] = '$';
 	output[1] = '2';
-	output[2] = 'a';
+#ifdef BF_SELF_TEST
+	output[2] = 'y'; /* known correct */
+#else
+	output[2] = 'a'; /* unknown correctness */
+#endif
 	output[3] = '$';
 	output[4] = '0' + count / 10;
 	output[5] = '0' + count % 10;

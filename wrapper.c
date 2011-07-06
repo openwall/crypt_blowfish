@@ -199,7 +199,7 @@ char *__crypt_gensalt_rn(const char *prefix, unsigned long count,
 		return NULL;
 	}
 
-	if (!strncmp(prefix, "$2a$", 4))
+	if (!strncmp(prefix, "$2a$", 4) || !strncmp(prefix, "$2y$", 4))
 		use = _crypt_gensalt_blowfish_rn;
 	else
 	if (!strncmp(prefix, "$1$", 3))
@@ -376,7 +376,7 @@ int main(void)
 	}
 
 	setting1 = crypt_gensalt(which.hash, 12, data, size);
-	if (!setting1 || strncmp(setting1, "$2a$12$", 7)) {
+	if (!setting1 || strncmp(setting1, "$2y$12$", 7)) {
 		puts("FAILED (crypt_gensalt)\n");
 		return 1;
 	}
