@@ -550,27 +550,104 @@ static void BF_swap(BF_word *x, int count)
 #endif
 
 static void BF_set_key(const char *key, BF_key expanded, BF_key initial,
-    int sign_extension_bug)
+    unsigned char flags)
 {
 	const char *ptr = key;
-	int i, j;
-	BF_word tmp;
+	unsigned int bug, i, j;
+	BF_word safety, sign, diff, tmp[2];
+
+/*
+ * There was a sign extension bug in older revisions of this function.  While
+ * we would have liked to simply fix the bug and move on, we have to provide
+ * a backwards compatibility feature (essentially the bug) for some systems and
+ * a safety measure for some others.  The latter is needed because for certain
+ * multiple inputs to the buggy algorithm there exist easily found inputs to
+ * the correct algorithm that produce the same hash.  Thus, we optionally
+ * deviate from the correct algorithm just enough to avoid such collisions.
+ * While the bug itself affected the majority of passwords containing
+ * characters with the 8th bit set (although only a percentage of those in a
+ * collision-producing way), the anti-collision safety measure affects
+ * only a subset of passwords containing the '\xff' character (not even all of
+ * those passwords, just some of them).  This character is not found in valid
+ * UTF-8 sequences and is rarely used in popular 8-bit character encodings.
+ * Thus, the safety measure is unlikely to cause much annoyance, and is a
+ * reasonable tradeoff to use when authenticating against existing hashes that
+ * are not reliably known to have been computed with the correct algorithm.
+ *
+ * We use an approach that tries to minimize side-channel leaks of password
+ * information - that is, we mostly use fixed-cost bitwise operations instead
+ * of branches or table lookups.  (One conditional branch based on password
+ * length remains.  It is not part of the bug aftermath, though, and is
+ * difficult and possibly unreasonable to avoid given the use of C strings by
+ * the caller, which results in similar timing leaks anyway.)
+ *
+ * For actual implementation, we set an array index in the variable "bug"
+ * (0 means no bug, 1 means sign extension bug emulation) and a flag in the
+ * variable "safety" (bit 16 is set when the safety measure is requested).
+ * Valid combinations of settings are:
+ *
+ * Prefix "$2a$": bug = 0, safety = 0x10000
+ * Prefix "$2x$": bug = 1, safety = 0
+ * Prefix "$2y$": bug = 0, safety = 0
+ */
+	bug = (unsigned int)flags & 1;
+	safety = ((BF_word)flags & 2) << 15;
+
+	sign = diff = 0;
 
 	for (i = 0; i < BF_N + 2; i++) {
-		tmp = 0;
+		tmp[0] = tmp[1] = 0;
 		for (j = 0; j < 4; j++) {
-			tmp <<= 8;
-			if (sign_extension_bug)
-				tmp |= (BF_word_signed)(signed char)*ptr;
+			tmp[0] <<= 8;
+			tmp[0] |= (unsigned char)*ptr; /* correct */
+			tmp[1] <<= 8;
+			tmp[1] |= (BF_word_signed)(signed char)*ptr; /* bug */
+/*
+ * Sign extension in the first char has no effect - nothing to overwrite yet,
+ * and those extra 24 bits will be fully shifted out of the 32-bit word.  For
+ * chars 1, 2, 3 in each four-char block, we set bit 7 of "sign" if sign
+ * extension in tmp[1] occurs.  Once this flag is set, it remains set.
+ */
+			if (j)
+				sign |= tmp[1] & 0x80;
+			if (!*ptr)
+				ptr = key;
 			else
-				tmp |= (unsigned char)*ptr;
-
-			if (!*ptr) ptr = key; else ptr++;
+				ptr++;
 		}
+		diff |= tmp[0] ^ tmp[1]; /* Non-zero on any differences */
 
-		expanded[i] = tmp;
-		initial[i] = BF_init_state.P[i] ^ tmp;
+		expanded[i] = tmp[bug];
+		initial[i] = BF_init_state.P[i] ^ tmp[bug];
 	}
+
+/*
+ * At this point, "diff" is zero iff the correct and buggy algorithms produced
+ * exactly the same result.  If so and if "sign" is non-zero, which indicates
+ * that there was a non-benign sign extension, this means that we have a
+ * collision between the correctly computed hash for this password and a set of
+ * passwords that could be supplied to the buggy algorithm.  Our safety measure
+ * is meant to protect from such many-buggy to one-correct collisions, by
+ * deviating from the correct algorithm in such cases.  Let's check for this.
+ */
+	diff |= diff >> 16; /* still zero iff exact match */
+	diff &= 0xffff; /* ditto */
+	diff += 0xffff; /* bit 16 set iff "diff" was non-zero (on non-match) */
+	sign <<= 9; /* move the non-benign sign extension flag to bit 16 */
+	sign &= ~diff & safety; /* action needed? */
+
+/*
+ * If we have determined that we need to deviate from the correct algorithm,
+ * flip bit 16 in initial expanded key.  (The choice of 16 is arbitrary, but
+ * let's stick to it now.  It came out of the approach we used above, and it's
+ * not any worse than any other choice we could make.)
+ *
+ * It is crucial that we don't do the same to the expanded key used in the main
+ * Eksblowfish loop.  By doing it to only one of these two, we deviate from a
+ * state that could be directly specified by a password to the buggy algorithm
+ * (and to the fully correct one as well, but that's a side-effect).
+ */
+	initial[0] ^= sign;
 }
 
 static char *BF_crypt(const char *key, const char *setting,
@@ -580,6 +657,9 @@ static char *BF_crypt(const char *key, const char *setting,
 #if BF_ASM
 	extern void _BF_body_r(BF_ctx *ctx);
 #endif
+	static const unsigned char flags_by_subtype[26] =
+		{2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0};
 	struct {
 		BF_ctx ctx;
 		BF_key expanded_key;
@@ -601,7 +681,8 @@ static char *BF_crypt(const char *key, const char *setting,
 
 	if (setting[0] != '$' ||
 	    setting[1] != '2' ||
-	    (setting[2] != 'a' && setting[2] != 'x' && setting[2] != 'y') ||
+	    setting[2] < 'a' || setting[2] > 'z' ||
+	    !flags_by_subtype[(unsigned int)(unsigned char)setting[2] - 'a'] ||
 	    setting[3] != '$' ||
 	    setting[4] < '0' || setting[4] > '3' ||
 	    setting[5] < '0' || setting[5] > '9' ||
@@ -619,7 +700,8 @@ static char *BF_crypt(const char *key, const char *setting,
 	}
 	BF_swap(data.binary.salt, 4);
 
-	BF_set_key(key, data.expanded_key, data.ctx.P, setting[2] == 'x');
+	BF_set_key(key, data.expanded_key, data.ctx.P,
+	    flags_by_subtype[(unsigned int)(unsigned char)setting[2] - 'a']);
 
 	memcpy(data.ctx.S, BF_init_state.S, sizeof(data.ctx.S));
 
