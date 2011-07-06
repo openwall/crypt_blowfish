@@ -749,7 +749,7 @@ char *_crypt_blowfish_rn(const char *key, const char *setting,
 	test_hash = (setting[2] == 'x') ? test_2x : test_2a;
 	memcpy(buf, test_hash, sizeof(buf));
 	memset(buf, -1, sizeof(buf) - (6 + 1)); /* keep "canary" only */
-	p = BF_crypt(test_key, test_hash, buf, sizeof(buf) - 6, 1);
+	p = BF_crypt(test_key, test_hash, buf, sizeof(buf) - (6 + 1), 1);
 
 	ok = (p == buf && !memcmp(p, test_hash, sizeof(buf)));
 
