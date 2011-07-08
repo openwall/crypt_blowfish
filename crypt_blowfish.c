@@ -41,13 +41,6 @@
 /* Just to make sure the prototypes match the actual definitions */
 #include "crypt_blowfish.h"
 
-/*
- * Please keep this enabled.  We really don't want incompatible hashes to be
- * produced.  The performance cost of this quick self-test is around 0.6% at
- * the "$2a$08" setting.
- */
-#define BF_SELF_TEST
-
 #ifdef __i386__
 #define BF_ASM				1
 #define BF_SCALE			1
@@ -368,20 +361,6 @@ static unsigned char BF_atoi64[0x60] = {
 	43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 64, 64, 64, 64, 64
 };
 
-/*
- * This may be optimized out if built with function inlining and no BF_ASM.
- */
-static void clean(void *data, int size)
-{
-#if BF_ASM
-	extern void _BF_clean(void *_data);
-#endif
-	memset(data, 0, size);
-#if BF_ASM
-	_BF_clean(data);
-#endif
-}
-
 #define BF_safe_atoi64(dst, src) \
 { \
 	tmp = (unsigned char)(src); \
@@ -694,7 +673,6 @@ static char *BF_crypt(const char *key, const char *setting,
 
 	count = (BF_word)1 << ((setting[4] - '0') * 10 + (setting[5] - '0'));
 	if (count < min || BF_decode(data.binary.salt, &setting[7], 16)) {
-		clean(data.binary.salt, sizeof(data.binary.salt));
 		__set_errno(EINVAL);
 		return NULL;
 	}
@@ -783,16 +761,6 @@ static char *BF_crypt(const char *key, const char *setting,
 	BF_encode(&output[7 + 22], data.binary.output, 23);
 	output[7 + 22 + 31] = '\0';
 
-#ifndef BF_SELF_TEST
-	if (output[2] == 'y')
-		output[2] = 'a'; /* unknown correctness */
-
-/* Overwrite the most obvious sensitive data we have on the stack.  Note
- * that this does not guarantee there's no sensitive data left on the
- * stack and/or in registers; I'm not aware of portable code that does. */
-	clean(&data, sizeof(data));
-#endif
-
 	return output;
 }
 
@@ -811,10 +779,29 @@ int _crypt_output_magic(const char *setting, char *output, int size)
 	return 0;
 }
 
+/*
+ * Please preserve the runtime self-test.  It serves two purposes at once:
+ *
+ * 1. We really can't afford the risk of producing incompatible hashes e.g.
+ * when there's something like gcc bug 26587 again, whereas an application or
+ * library integrating this code might not also integrate our external tests or
+ * it might not run them after every build.  Even if it does, the miscompile
+ * might only occur on the production build, but not on a testing build (such
+ * as because of different optimization settings).  It is painful to recover
+ * from incorrectly-computed hashes - merely fixing whatever broke is not
+ * enough.  Thus, a proactive measure like this self-test is needed.
+ *
+ * 2. We don't want to leave sensitive data from our actual password hash
+ * computation on the stack or in registers.  Previous revisions of the code
+ * would do explicit cleanups, but simply running the self-test after hash
+ * computation is more reliable.
+ *
+ * The performance cost of this quick self-test is around 0.6% at the "$2a$08"
+ * setting.
+ */
 char *_crypt_blowfish_rn(const char *key, const char *setting,
 	char *output, int size)
 {
-#ifdef BF_SELF_TEST
 	char *retval;
 	const char *test_key = "8b \xd0\xc1\xd2\xcf\xcc\xd8";
 	const char *test_2a =
@@ -840,9 +827,12 @@ char *_crypt_blowfish_rn(const char *key, const char *setting,
 
 	ok = (p == buf && !memcmp(p, test_hash, sizeof(buf)));
 
-/* This could reveal what hash type we were using last.  Unfortunately, we
- * can't reliably clean the test_hash pointer. */
-	clean(&buf, sizeof(buf));
+/*
+ * This could reveal what hash type we were using last.
+ * Unfortunately, the memset() might be optimized out and we can't reliably
+ * clean the test_hash pointer.
+ */
+	memset(buf, 0, sizeof(buf));
 
 	if (ok)
 		return retval;
@@ -851,11 +841,6 @@ char *_crypt_blowfish_rn(const char *key, const char *setting,
 	_crypt_output_magic(setting, output, size);
 	__set_errno(EINVAL); /* pretend we don't support this hash type */
 	return NULL;
-#else
-#warning Self-test is disabled, please enable
-	_crypt_output_magic(setting, output, size);
-	return BF_crypt(key, setting, output, size, 16);
-#endif
 }
 
 char *_crypt_gensalt_blowfish_rn(const char *prefix, unsigned long count,
