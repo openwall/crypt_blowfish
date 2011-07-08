@@ -858,11 +858,13 @@ char *_crypt_blowfish_rn(const char *key, const char *setting,
 #endif
 }
 
-char *_crypt_gensalt_blowfish_rn(unsigned long count,
+char *_crypt_gensalt_blowfish_rn(const char *prefix, unsigned long count,
 	const char *input, int size, char *output, int output_size)
 {
 	if (size < 16 || output_size < 7 + 22 + 1 ||
-	    (count && (count < 4 || count > 31))) {
+	    (count && (count < 4 || count > 31)) ||
+	    prefix[0] != '$' || prefix[1] != '2' ||
+	    (prefix[2] != 'a' && prefix[2] != 'y')) {
 		if (output_size > 0) output[0] = '\0';
 		__set_errno((output_size < 7 + 22 + 1) ? ERANGE : EINVAL);
 		return NULL;
@@ -872,11 +874,7 @@ char *_crypt_gensalt_blowfish_rn(unsigned long count,
 
 	output[0] = '$';
 	output[1] = '2';
-#ifdef BF_SELF_TEST
-	output[2] = 'y'; /* known correct */
-#else
-	output[2] = 'a'; /* unknown correctness */
-#endif
+	output[2] = prefix[2];
 	output[3] = '$';
 	output[4] = '0' + count / 10;
 	output[5] = '0' + count % 10;

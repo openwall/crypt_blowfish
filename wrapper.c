@@ -189,7 +189,7 @@ char *crypt(const char *key, const char *setting)
 char *__crypt_gensalt_rn(const char *prefix, unsigned long count,
 	const char *input, int size, char *output, int output_size)
 {
-	char *(*use)(unsigned long _count,
+	char *(*use)(const char *_prefix, unsigned long _count,
 		const char *_input, int _size,
 		char *_output, int _output_size);
 
@@ -218,7 +218,7 @@ char *__crypt_gensalt_rn(const char *prefix, unsigned long count,
 		return NULL;
 	}
 
-	return use(count, input, size, output, output_size);
+	return use(prefix, count, input, size, output, output_size);
 }
 
 char *__crypt_gensalt_ra(const char *prefix, unsigned long count,
@@ -404,7 +404,7 @@ int main(void)
 	}
 
 	setting1 = crypt_gensalt(which.hash, 12, data, size);
-	if (!setting1 || strncmp(setting1, "$2y$12$", 7)) {
+	if (!setting1 || strncmp(setting1, "$2a$12$", 7)) {
 		puts("FAILED (crypt_gensalt)\n");
 		return 1;
 	}

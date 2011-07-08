@@ -20,9 +20,11 @@
 unsigned char _crypt_itoa64[64 + 1] =
 	"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-char *_crypt_gensalt_traditional_rn(unsigned long count,
+char *_crypt_gensalt_traditional_rn(const char *prefix, unsigned long count,
 	const char *input, int size, char *output, int output_size)
 {
+	(void) prefix;
+
 	if (size < 2 || output_size < 2 + 1 || (count && count != 25)) {
 		if (output_size > 0) output[0] = '\0';
 		__set_errno((output_size < 2 + 1) ? ERANGE : EINVAL);
@@ -36,10 +38,12 @@ char *_crypt_gensalt_traditional_rn(unsigned long count,
 	return output;
 }
 
-char *_crypt_gensalt_extended_rn(unsigned long count,
+char *_crypt_gensalt_extended_rn(const char *prefix, unsigned long count,
 	const char *input, int size, char *output, int output_size)
 {
 	unsigned long value;
+
+	(void) prefix;
 
 /* Even iteration counts make it easier to detect weak DES keys from a look
  * at the hash, so they should be avoided */
@@ -69,10 +73,12 @@ char *_crypt_gensalt_extended_rn(unsigned long count,
 	return output;
 }
 
-char *_crypt_gensalt_md5_rn(unsigned long count,
+char *_crypt_gensalt_md5_rn(const char *prefix, unsigned long count,
 	const char *input, int size, char *output, int output_size)
 {
 	unsigned long value;
+
+	(void) prefix;
 
 	if (size < 3 || output_size < 3 + 4 + 1 || (count && count != 1000)) {
 		if (output_size > 0) output[0] = '\0';
