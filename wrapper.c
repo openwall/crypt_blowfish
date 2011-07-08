@@ -263,10 +263,7 @@ weak_alias(crypt, fcrypt)
 #endif
 
 #ifdef TEST
-static struct {
-	char *hash;
-	char *pw;
-} tests[] = {
+static const char *tests[][3] = {
 	{"$2a$05$CCCCCCCCCCCCCCCCCCCCC.E5YPO9kmyuRGyh0XouQYb4YMJKvyOeW",
 		"U*U"},
 	{"$2a$05$CCCCCCCCCCCCCCCCCCCCC.VGOzA784oUp/Z0DY336zx7pLYAy0lwK",
@@ -337,7 +334,13 @@ static struct {
 		"\x55\xaa\xff\x55\xaa\xff\x55\xaa\xff\x55\xaa\xff"},
 	{"$2a$05$CCCCCCCCCCCCCCCCCCCCC.7uG0VCzI2bS7j6ymqJi9CdcdxiRTWNy",
 		""},
-	{NULL, NULL}
+	{"*0", "", "$2a$03$CCCCCCCCCCCCCCCCCCCCC."},
+	{"*0", "", "$2a$32$CCCCCCCCCCCCCCCCCCCCC."},
+	{"*0", "", "$2z$05$CCCCCCCCCCCCCCCCCCCCC."},
+	{"*0", "", "$2`$05$CCCCCCCCCCCCCCCCCCCCC."},
+	{"*0", "", "$2{$05$CCCCCCCCCCCCCCCCCCCCC."},
+	{"*1", "", "*0"},
+	{NULL}
 };
 
 #define which				tests[0]
@@ -358,14 +361,22 @@ static void *run(void *arg)
 	int size = 0x12345678;
 
 	do {
-		if (strcmp(crypt_ra(tests[i].pw, tests[i].hash, &data, &size),
-		    tests[i].hash)) {
+		const char *hash = tests[i][0];
+		const char *key = tests[i][1];
+		const char *setting = tests[i][2];
+
+		if (!tests[++i][0])
+			i = 0;
+
+		if (setting && strlen(hash) < 30) /* not for benchmark */
+			continue;
+
+		if (strcmp(crypt_ra(key, hash, &data, &size), hash)) {
 			printf("%d: FAILED (crypt_ra/%d/%lu)\n",
 				(int)((char *)arg - (char *)0), i, count);
 			free(data);
 			return NULL;
 		}
-		if (!tests[++i].hash) i = 0;
 		count++;
 	} while (running);
 
@@ -388,22 +399,44 @@ int main(void)
 	void *t_retval;
 #endif
 
-	for (i = 0; tests[i].hash; i++)
-	if (strcmp(crypt(tests[i].pw, tests[i].hash), tests[i].hash)) {
-		printf("FAILED (crypt/%d)\n", i);
-		return 1;
-	}
-
 	data = NULL;
 	size = 0x12345678;
-	for (i = 0; tests[i].hash; i++)
-	if (strcmp(crypt_ra(tests[i].pw, tests[i].hash, &data, &size),
-	    tests[i].hash)) {
-		printf("FAILED (crypt_ra/%d)\n", i);
-		return 1;
+
+	for (i = 0; tests[i][0]; i++) {
+		const char *hash = tests[i][0];
+		const char *key = tests[i][1];
+		const char *setting = tests[i][2];
+		const char *p;
+		int ok = !setting || strlen(hash) >= 30;
+		char s_buf[30];
+		if (!setting) {
+			memcpy(s_buf, hash, sizeof(s_buf) - 1);
+			s_buf[sizeof(s_buf) - 1] = 0;
+			setting = s_buf;
+		}
+
+		__set_errno(0);
+		p = crypt(key, setting);
+		if ((!ok && !errno) || strcmp(p, hash)) {
+			printf("FAILED (crypt/%d)\n", i);
+			return 1;
+		}
+
+		if (ok && strcmp(crypt(key, hash), hash)) {
+			printf("FAILED (crypt/%d)\n", i);
+			return 1;
+		}
+
+		__set_errno(0);
+		p = crypt_ra(key, setting, &data, &size);
+		if ((ok && (!p || strcmp(p, hash))) ||
+		    (!ok && (!errno || p || strcmp((char *)data, hash)))) {
+			printf("FAILED (crypt_ra/%d)\n", i);
+			return 1;
+		}
 	}
 
-	setting1 = crypt_gensalt(which.hash, 12, data, size);
+	setting1 = crypt_gensalt(which[0], 12, data, size);
 	if (!setting1 || strncmp(setting1, "$2a$12$", 7)) {
 		puts("FAILED (crypt_gensalt)\n");
 		return 1;
