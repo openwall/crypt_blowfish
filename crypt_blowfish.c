@@ -840,13 +840,6 @@ char *_crypt_blowfish_rn(const char *key, const char *setting,
 	    test_hash[(unsigned int)(unsigned char)buf.s[2] & 1],
 	    31 + 1 + 1 + 1));
 
-/*
- * This could reveal what hash type we were using last.
- * Unfortunately, the memset() might be optimized out and we can't reliably
- * clean the stack and the registers.
- */
-	memset(&buf, 0, sizeof(buf));
-
 	{
 		const char *k = "\xff\xa3" "34" "\xff\xff\xff\xa3" "345";
 		BF_key ae, ai, ye, yi;
