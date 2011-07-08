@@ -408,7 +408,8 @@ int main(void)
 		const char *setting = tests[i][2];
 		const char *p;
 		int ok = !setting || strlen(hash) >= 30;
-		char s_buf[30];
+		int o_size;
+		char s_buf[30], o_buf[61];
 		if (!setting) {
 			memcpy(s_buf, hash, sizeof(s_buf) - 1);
 			s_buf[sizeof(s_buf) - 1] = 0;
@@ -425,6 +426,24 @@ int main(void)
 		if (ok && strcmp(crypt(key, hash), hash)) {
 			printf("FAILED (crypt/%d)\n", i);
 			return 1;
+		}
+
+		for (o_size = -1; o_size <= (int)sizeof(o_buf); o_size++) {
+			int ok_n = ok && o_size == (int)sizeof(o_buf);
+			const char *x = "abc";
+			strcpy(o_buf, x);
+			if (o_size >= 3) {
+				x = "*0";
+				if (setting[0] == '*' && setting[1] == '0')
+					x = "*1";
+			}
+			__set_errno(0);
+			p = crypt_rn(key, setting, o_buf, o_size);
+			if ((ok_n && (!p || strcmp(p, hash))) ||
+			    (!ok_n && (!errno || p || strcmp(o_buf, x)))) {
+				printf("FAILED (crypt_rn/%d)\n", i);
+				return 1;
+			}
 		}
 
 		__set_errno(0);
