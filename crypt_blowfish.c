@@ -802,38 +802,45 @@ int _crypt_output_magic(const char *setting, char *output, int size)
 char *_crypt_blowfish_rn(const char *key, const char *setting,
 	char *output, int size)
 {
-	char *retval;
 	const char *test_key = "8b \xd0\xc1\xd2\xcf\xcc\xd8";
-	const char *test_2a =
-	    "$2a$00$abcdefghijklmnopqrstuui1D709vfamulimlGcq0qq3UvuUasvEa"
-	    "\0"
-	    "canary";
-	const char *test_2x =
-	    "$2x$00$abcdefghijklmnopqrstuuVUrPmXD6q/nVSSp7pNDhCR9071IfIRe"
-	    "\0"
-	    "canary";
-	const char *test_hash, *p;
-	int ok;
-	char buf[7 + 22 + 31 + 1 + 6 + 1];
+	const char *test_setting = "$2a$00$abcdefghijklmnopqrstuu";
+	static const char * const test_hash[2] =
+		{"VUrPmXD6q/nVSSp7pNDhCR9071IfIRe\0\x55", /* $2x$ */
+		"i1D709vfamulimlGcq0qq3UvuUasvEa\0\x55"}; /* $2a$, $2y$ */
+	char *retval;
+	const char *p;
+	int save_errno, ok;
+	char s_buf[7 + 22 + 1];
+	char o_buf[7 + 22 + 31 + 1 + 1 + 1];
 
+/* Hash the supplied password */
 	_crypt_output_magic(setting, output, size);
 	retval = BF_crypt(key, setting, output, size, 16);
+	save_errno = errno;
 
 /* Do a quick self-test.  This also happens to overwrite BF_crypt()'s data. */
-	test_hash = (setting[2] == 'x') ? test_2x : test_2a;
-	memcpy(buf, test_hash, sizeof(buf));
-	memset(buf, -1, sizeof(buf) - (6 + 1)); /* keep "canary" only */
-	p = BF_crypt(test_key, test_hash, buf, sizeof(buf) - (6 + 1), 1);
+	memcpy(s_buf, test_setting, sizeof(s_buf));
+	if (retval)
+		s_buf[2] = setting[2];
+	memset(o_buf, 0x55, sizeof(o_buf));
+	o_buf[sizeof(o_buf) - 1] = 0;
+	p = BF_crypt(test_key, s_buf, o_buf, sizeof(o_buf) - (1 + 1), 1);
 
-	ok = (p == buf && !memcmp(p, test_hash, sizeof(buf)));
+	ok = (p == o_buf &&
+	    !memcmp(p, s_buf, 7 + 22) &&
+	    !memcmp(p + (7 + 22),
+	    test_hash[(unsigned int)(unsigned char)s_buf[2] & 1],
+	    31 + 1 + 1 + 1));
 
 /*
  * This could reveal what hash type we were using last.
- * Unfortunately, the memset() might be optimized out and we can't reliably
- * clean the test_hash pointer.
+ * Unfortunately, the memset()s might be optimized out and we can't reliably
+ * clean the stack and the registers.
  */
-	memset(buf, 0, sizeof(buf));
+	memset(s_buf, 0, sizeof(s_buf));
+	memset(o_buf, 0, sizeof(o_buf));
 
+	__set_errno(save_errno);
 	if (ok)
 		return retval;
 
