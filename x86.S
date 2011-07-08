@@ -32,7 +32,6 @@
 #endif
 
 #define BF_FRAME			0x200
-#define BF_CLEAN			0x300
 #define ctx				%esp
 
 #define BF_ptr				(ctx)
