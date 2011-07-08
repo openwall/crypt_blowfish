@@ -810,8 +810,10 @@ char *_crypt_blowfish_rn(const char *key, const char *setting,
 	char *retval;
 	const char *p;
 	int save_errno, ok;
-	char s_buf[7 + 22 + 1];
-	char o_buf[7 + 22 + 31 + 1 + 1 + 1];
+	struct {
+		char s[7 + 22 + 1];
+		char o[7 + 22 + 31 + 1 + 1 + 1];
+	} buf;
 
 /* Hash the supplied password */
 	_crypt_output_magic(setting, output, size);
@@ -819,26 +821,25 @@ char *_crypt_blowfish_rn(const char *key, const char *setting,
 	save_errno = errno;
 
 /* Do a quick self-test.  This also happens to overwrite BF_crypt()'s data. */
-	memcpy(s_buf, test_setting, sizeof(s_buf));
+	memcpy(buf.s, test_setting, sizeof(buf.s));
 	if (retval)
-		s_buf[2] = setting[2];
-	memset(o_buf, 0x55, sizeof(o_buf));
-	o_buf[sizeof(o_buf) - 1] = 0;
-	p = BF_crypt(test_key, s_buf, o_buf, sizeof(o_buf) - (1 + 1), 1);
+		buf.s[2] = setting[2];
+	memset(buf.o, 0x55, sizeof(buf.o));
+	buf.o[sizeof(buf.o) - 1] = 0;
+	p = BF_crypt(test_key, buf.s, buf.o, sizeof(buf.o) - (1 + 1), 1);
 
-	ok = (p == o_buf &&
-	    !memcmp(p, s_buf, 7 + 22) &&
+	ok = (p == buf.o &&
+	    !memcmp(p, buf.s, 7 + 22) &&
 	    !memcmp(p + (7 + 22),
-	    test_hash[(unsigned int)(unsigned char)s_buf[2] & 1],
+	    test_hash[(unsigned int)(unsigned char)buf.s[2] & 1],
 	    31 + 1 + 1 + 1));
 
 /*
  * This could reveal what hash type we were using last.
- * Unfortunately, the memset()s might be optimized out and we can't reliably
+ * Unfortunately, the memset() might be optimized out and we can't reliably
  * clean the stack and the registers.
  */
-	memset(s_buf, 0, sizeof(s_buf));
-	memset(o_buf, 0, sizeof(o_buf));
+	memset(&buf, 0, sizeof(buf));
 
 	__set_errno(save_errno);
 	if (ok)
