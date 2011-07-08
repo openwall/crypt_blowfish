@@ -605,7 +605,7 @@ static void BF_set_key(const char *key, BF_key expanded, BF_key initial,
 /*
  * Sign extension in the first char has no effect - nothing to overwrite yet,
  * and those extra 24 bits will be fully shifted out of the 32-bit word.  For
- * chars 1, 2, 3 in each four-char block, we set bit 7 of "sign" if sign
+ * chars 2, 3, 4 in each four-char block, we set bit 7 of "sign" if sign
  * extension in tmp[1] occurs.  Once this flag is set, it remains set.
  */
 			if (j)
