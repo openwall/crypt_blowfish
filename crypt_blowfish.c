@@ -820,7 +820,13 @@ char *_crypt_blowfish_rn(const char *key, const char *setting,
 	retval = BF_crypt(key, setting, output, size, 16);
 	save_errno = errno;
 
-/* Do a quick self-test.  This also happens to overwrite BF_crypt()'s data. */
+/*
+ * Do a quick self-test.  It is important that we make both calls to BF_crypt()
+ * from the same scope such that they likely use the same stack locations,
+ * which makes the second call overwrite the first call's sensitive data on the
+ * stack and makes it more likely that any alignment related issues would be
+ * detected by the self-test.
+ */
 	memcpy(buf.s, test_setting, sizeof(buf.s));
 	if (retval)
 		buf.s[2] = setting[2];
@@ -840,6 +846,16 @@ char *_crypt_blowfish_rn(const char *key, const char *setting,
  * clean the stack and the registers.
  */
 	memset(&buf, 0, sizeof(buf));
+
+	{
+		const char *k = "\xff\xa3" "34" "\xff\xff\xff\xa3" "345";
+		BF_key ae, ai, ye, yi;
+		BF_set_key(k, ae, ai, 2); /* $2a$ */
+		BF_set_key(k, ye, yi, 4); /* $2y$ */
+		ai[0] ^= 0x10000; /* undo the safety (for comparison) */
+		ok = ok && !memcmp(ae, ye, sizeof(ae)) &&
+		    !memcmp(ai, yi, sizeof(ai));
+	}
 
 	__set_errno(save_errno);
 	if (ok)
