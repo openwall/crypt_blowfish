@@ -33,6 +33,21 @@ will produce no code in this case).
 
 2. Building the routines into GNU C library.
 
+For versions 2.13 and 2.14 (and likely other nearby ones), extract the
+library sources as usual.  Apply the patch for glibc 2.14 provided in
+this package.  Enter crypt/ and rename crypt.h to gnu-crypt.h within
+that directory.  Copy the C sources, header, and assembly (x86.S) files
+from this package in there as well (but be sure you don't overwrite the
+Makefile).  Configure, build, and install the library as usual.
+
+For versions 2.2 to 2.3.6 (and likely also for some newer ones),
+extract the library sources and maybe its optional add-ons as usual.
+Apply the patch for glibc 2.3.6 provided in this package.  Enter
+crypt/ and rename crypt.h to gnu-crypt.h within that directory.  Copy
+the C sources, header, and assembly (x86.S) files from this package in
+there as well (but be sure you don't overwrite the Makefile).
+Configure, build, and install the library as usual.
+
 For versions 2.1 to 2.1.3, extract the library sources and the crypt
 and linuxthreads add-ons as usual.  Apply the patch for glibc 2.1.3
 provided in this package.  Enter crypt/sysdeps/unix/, and rename
@@ -40,14 +55,6 @@ crypt.h to gnu-crypt.h within that directory.  Copy C sources, header,
 and assembly (x86.S) files from this package in there as well (but be
 sure you don't overwrite the Makefile).  Configure, build, and install
 the library as usual.
-
-For versions 2.2 to 2.3.6 (and likely also for some newer ones),
-extract the library sources and the linuxthreads add-on as usual.
-Apply the patch for glibc 2.3.6 provided in this package.  Enter
-crypt/ and rename crypt.h to gnu-crypt.h within that directory.  Copy
-the C sources, header, and assembly (x86.S) files from this package in
-there as well (but be sure you don't overwrite the Makefile).
-Configure, build, and install the library as usual.
 
 Programs that want to use the provided interfaces will need to include
 crypt.h (but not ow-crypt.h directly).  By default, prototypes for the
@@ -58,4 +65,4 @@ routines as well.
 -- 
 Solar Designer <solar at openwall.com>
 
-$Owl: Owl/packages/glibc/crypt_blowfish/README,v 1.8 2011/07/16 15:16:39 solar Exp $
+$Owl: Owl/packages/glibc/crypt_blowfish/README,v 1.9 2011/07/16 21:48:45 solar Exp $
