@@ -846,7 +846,8 @@ char *_crypt_blowfish_rn(const char *key, const char *setting,
 		BF_set_key(k, ae, ai, 2); /* $2a$ */
 		BF_set_key(k, ye, yi, 4); /* $2y$ */
 		ai[0] ^= 0x10000; /* undo the safety (for comparison) */
-		ok = ok && !memcmp(ae, ye, sizeof(ae)) &&
+		ok = ok && ai[0] == 0xdb9c59bc && ye[17] == 0x33343500 &&
+		    !memcmp(ae, ye, sizeof(ae)) &&
 		    !memcmp(ai, yi, sizeof(ai));
 	}
 
